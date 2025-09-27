@@ -1,0 +1,35 @@
+// lib/features/user/data/user_model.dart
+
+import 'package:hive/hive.dart';
+import '../domain/user.dart';
+
+part 'user_model.g.dart';
+
+@HiveType(typeId: 0)
+class UserModel extends HiveObject {
+  @HiveField(0)
+  final int id;
+
+  @HiveField(1)
+  final String name;
+
+  @HiveField(2)
+  final String email;
+
+  UserModel({required this.id, required this.name, required this.email});
+
+  // Konversi ke Entity (domain)
+  User toEntity() => User(id: id, name: name, email: email);
+
+  // Konversi dari JSON (API)
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as int,
+      // dummyjson.com menggunakan firstName dan lastName
+      name: json.containsKey('firstName')
+          ? '${json['firstName']} ${json['lastName']}'
+          : json['name'] as String,
+      email: json['email'] as String,
+    );
+  }
+}
