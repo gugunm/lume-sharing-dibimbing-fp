@@ -1,5 +1,3 @@
-// lib/features/user/data/user_model.dart
-
 import 'package:hive/hive.dart';
 import '../domain/user.dart';
 
@@ -24,12 +22,12 @@ class UserModel extends HiveObject {
   // Konversi dari JSON (API)
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as int,
+      id: json['id'] ?? 0, // Provide default value
       // dummyjson.com menggunakan firstName dan lastName
-      name: json.containsKey('firstName')
-          ? '${json['firstName']} ${json['lastName']}'
-          : json['name'] as String,
-      email: json['email'] as String,
+      name: json.containsKey('firstName') && json['firstName'] != null
+          ? '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim()
+          : json['name']?.toString() ?? 'Unknown User',
+      email: json['email']?.toString() ?? '',
     );
   }
 }

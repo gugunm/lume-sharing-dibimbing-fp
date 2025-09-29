@@ -11,9 +11,7 @@ class UserRepository {
   static const String _boxName = 'users';
 
   Future<List<User>> getUsers() async {
-    print('>>> getUsers dipanggil');
     try {
-      print('>>> Mencoba mengambil data dari API');
       // 1. Ambil dari API
       final response = await _dio.get('/users');
       print('>>> Response diterima dari API');
@@ -29,7 +27,10 @@ class UserRepository {
         jsonList = response.data;
       }
 
-      final models = jsonList.map((e) => UserModel.fromJson(e)).toList();
+      final models = jsonList
+          .where((e) => e != null) // Filter out null entries
+          .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
+          .toList();
 
       // 2. Simpan ke Hive
       print('>>> Menyimpan ke Hive');

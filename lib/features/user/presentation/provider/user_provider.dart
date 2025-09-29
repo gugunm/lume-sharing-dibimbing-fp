@@ -5,8 +5,12 @@ import '../../data/user_repository.dart';
 import '../../domain/user.dart';
 
 final userProvider = FutureProvider<List<User>>((ref) async {
-  print('>>> UserProvider dipanggil');
-  final repository = UserRepository();
-  print('>>> UserRepository dipanggil');
-  return await repository.getUsers();
+  try {
+    final repository = UserRepository();
+    final users = await repository.getUsers();
+    return users;
+  } catch (e) {
+    print('Error in userProvider: $e');
+    return <User>[]; // Return empty list instead of throwing
+  }
 });
