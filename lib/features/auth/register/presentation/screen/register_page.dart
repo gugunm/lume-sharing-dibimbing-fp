@@ -147,7 +147,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget _buildTitle(BuildContext context) {
     return Text(
       'Create your\nAccount',
-      style: Theme.of(context).textTheme.titleLarge,
+      style: Theme.of(context).textTheme.displaySmall,
     );
   }
 

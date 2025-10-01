@@ -123,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 // Title
                 Text(
                   'Sign in to your\nAccount',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.displaySmall,
                 ),
                 const SizedBox(height: AppSpacing.xl),
 

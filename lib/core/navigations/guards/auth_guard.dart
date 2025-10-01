@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 
@@ -15,7 +16,7 @@ class AuthGuard extends ConsumerWidget {
 
     // Show loading while checking authentication
     if (authState.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: GlobalLoadingWidget()));
     }
 
     // If authentication is required but user is not authenticated
@@ -27,7 +28,7 @@ class AuthGuard extends ConsumerWidget {
         ).pushReplacementNamed(NavigationRoutes.authLogin.path);
       });
 
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: GlobalLoadingWidget()));
     }
 
     // If user is authenticated but trying to access auth pages
@@ -37,7 +38,7 @@ class AuthGuard extends ConsumerWidget {
         Navigator.of(context).pushReplacementNamed('/home');
       });
 
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: GlobalLoadingWidget()));
     }
 
     return child;
