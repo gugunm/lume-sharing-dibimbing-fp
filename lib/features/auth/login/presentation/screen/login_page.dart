@@ -109,7 +109,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           _showSuccessSnackBar('Login successful!');
         }
         // Navigate to home page
-        Navigator.of(context).pushReplacementNamed(NavigationRoutes.home.path);
+        // Navigator.of(context).pushReplacementNamed(NavigationRoutes.home.path);
       }
 
       // Handle login error
