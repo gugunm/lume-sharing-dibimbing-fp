@@ -37,7 +37,17 @@ class _UserPostScreenState extends ConsumerState<UserPostScreen> {
     final userPostAsync = ref.watch(userPostProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Posts')),
+      appBar: AppBar(
+        title: const Text('My Posts'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ref.read(userPostProvider.notifier).getUserPosts(widget.userId);
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
       body: userPostAsync.when(
         loading: () => const GlobalLoadingWidget(),
         error: (error, stack) => Center(child: Text('Gagal: $error')),

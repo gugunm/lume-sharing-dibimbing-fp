@@ -37,7 +37,7 @@ class _PostPageViewState extends ConsumerState<PostPageView> {
     // Jika index 4 (Profile), arahkan ke user posts
     if (index == 4) {
       if (userId != null) {
-        Navigator.of(context).pushReplacementNamed(
+        Navigator.of(context).pushNamed(
           NavigationRoutes.userPost.pathWithParams({'userId': userId!}),
         );
       } else {

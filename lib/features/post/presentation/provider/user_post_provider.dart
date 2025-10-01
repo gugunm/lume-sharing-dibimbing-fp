@@ -21,14 +21,21 @@ class UserPostNotifier extends AsyncNotifier<List<Post>> {
     state = const AsyncLoading();
 
     try {
-      final result = await _repository.getUserPosts(
-        userId,
-        size: size,
-        page: page,
-      );
+      // Start timer and API call simultaneously
+      final futures = await Future.wait([
+        _repository.getUserPosts(userId, size: size, page: page),
+        Future.delayed(
+          const Duration(milliseconds: 500),
+        ), // Minimal delay 500ms
+      ]);
+
+      final result = futures[0] as UserPost; // Cast to correct type
       // Set success state with posts
       state = AsyncData(result.posts);
     } catch (e, stackTrace) {
+      // Even on error, ensure minimum delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
       // Set error state
       state = AsyncError(e, stackTrace);
     }
