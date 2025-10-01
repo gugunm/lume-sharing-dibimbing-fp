@@ -3,26 +3,26 @@ import 'package:fp_sharing_photo/features/auth/login/data/login_repository.dart'
 import 'package:fp_sharing_photo/features/auth/login/domain/login.dart';
 
 // State untuk authentication
-class AuthState {
+class LoginState {
   final bool isLoading;
   final bool isAuthenticated;
   final LoginResponse? loginResponse;
   final String? error;
 
-  const AuthState({
+  const LoginState({
     this.isLoading = false,
     this.isAuthenticated = false,
     this.loginResponse,
     this.error,
   });
 
-  AuthState copyWith({
+  LoginState copyWith({
     bool? isLoading,
     bool? isAuthenticated,
     LoginResponse? loginResponse,
     String? error,
   }) {
-    return AuthState(
+    return LoginState(
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       loginResponse: loginResponse ?? this.loginResponse,
@@ -37,17 +37,17 @@ final loginRepositoryProvider = Provider<LoginRepository>((ref) {
 });
 
 // Auth Notifier menggunakan Notifier (Riverpod 3.0+)
-class AuthNotifier extends Notifier<AuthState> {
+class LoginNotifier extends Notifier<LoginState> {
   late LoginRepository _repository;
 
   @override
-  AuthState build() {
+  LoginState build() {
     _repository = ref.read(loginRepositoryProvider);
 
     // Defer the stored login check until after build is complete
     Future.microtask(() => _checkStoredLogin());
 
-    return const AuthState();
+    return const LoginState();
   }
 
   // Check if user is already logged in from stored data
@@ -92,10 +92,10 @@ class AuthNotifier extends Notifier<AuthState> {
 
     try {
       await _repository.logout();
-      state = const AuthState(); // Reset to initial state
+      state = const LoginState(); // Reset to initial state
     } catch (e) {
       // Even if logout fails, clear local state
-      state = const AuthState();
+      state = const LoginState();
     }
   }
 
@@ -119,8 +119,8 @@ class AuthNotifier extends Notifier<AuthState> {
 }
 
 // Provider untuk AuthNotifier menggunakan NotifierProvider (Riverpod 3.0+)
-final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
-  return AuthNotifier();
+final authProvider = NotifierProvider<LoginNotifier, LoginState>(() {
+  return LoginNotifier();
 });
 
 // Helper providers

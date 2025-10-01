@@ -6,6 +6,7 @@ import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/widgets/button_widget.dart';
 import 'package:fp_sharing_photo/core/widgets/divider_widget.dart';
 import 'package:fp_sharing_photo/core/widgets/form/text_field_widget.dart';
+import 'package:fp_sharing_photo/core/widgets/snackbar_widget.dart';
 
 import '../provider/login_provider.dart';
 
@@ -74,39 +75,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Watch auth state changes
     final authState = ref.watch(authProvider);
 
     // Listen to auth state changes for navigation and notifications
-    ref.listen<AuthState>(authProvider, (previous, next) {
+    ref.listen<LoginState>(authProvider, (previous, next) {
       // Handle successful login (only show message for fresh logins, not auto-login)
       if (next.isAuthenticated && !next.isLoading) {
         // Only show success message if previous state was not authenticated
         // This prevents showing the message during auto-login checks
         if (previous != null && !previous.isAuthenticated) {
-          _showSuccessSnackBar('Login successful!');
+          AppNotification.success(context, 'Login successfully!');
         }
         // Navigate to home page
         // Navigator.of(context).pushReplacementNamed(NavigationRoutes.home.path);
@@ -114,7 +95,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       // Handle login error
       if (next.error != null && !next.isLoading) {
-        _showErrorSnackBar(next.error!);
+        AppNotification.error(context, next.error!);
       }
     });
 

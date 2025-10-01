@@ -1,70 +1,110 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/constants/app_spacing.dart';
+import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/widgets/button_widget.dart';
 import 'package:fp_sharing_photo/core/widgets/form/text_field_widget.dart';
+import 'package:fp_sharing_photo/core/widgets/snackbar_widget.dart';
 
-class RegisterPage extends StatefulWidget {
+import '../../domain/register_validators.dart';
+import '../provider/register_provider.dart';
+
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+class _RegisterPageState extends ConsumerState<RegisterPage> {
+  // Controllers grouped in a map for easier management
+  final Map<String, TextEditingController> _controllers = {
+    'name': TextEditingController(),
+    'username': TextEditingController(),
+    'email': TextEditingController(),
+    'password': TextEditingController(),
+    'confirmPassword': TextEditingController(),
+  };
 
-  String? _emailError;
-  String? _passwordError;
-  String? _confirmPasswordError;
+  // Form errors state
+  Map<String, String?> _validationErrors = {};
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    _controllers.values.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
-  void _validateEmail() {
+  void _validateForm() {
+    final validationResult = RegisterFormValidators.validateRegistrationForm(
+      name: _controllers['name']!.text,
+      username: _controllers['username']!.text,
+      email: _controllers['email']!.text,
+      password: _controllers['password']!.text,
+      confirmPassword: _controllers['confirmPassword']!.text,
+    );
+
     setState(() {
-      _emailError = null;
-      if (_emailController.text.isEmpty) {
-        _emailError = 'Email is required';
-      } else if (!RegExp(
-        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-      ).hasMatch(_emailController.text)) {
-        _emailError = 'Invalid email address';
-      }
+      _validationErrors = validationResult;
     });
   }
 
-  void _validatePasswords() {
-    setState(() {
-      _passwordError = null;
-      _confirmPasswordError = null;
+  bool get _isFormValid =>
+      _validationErrors.values.every((error) => error == null);
 
-      // Validate password
-      if (_passwordController.text.isEmpty) {
-        _passwordError = 'Password is required';
-      } else if (_passwordController.text.length < 8) {
-        _passwordError = 'Password must be at least 8 characters';
-      }
+  void _handleSubmit() async {
+    _validateForm();
 
-      // Validate confirm password
-      if (_confirmPasswordController.text.isEmpty) {
-        _confirmPasswordError = 'Please confirm your password';
-      } else if (_passwordController.text != _confirmPasswordController.text) {
-        _confirmPasswordError = 'Passwords do not match';
+    if (!_isFormValid) return;
+
+    try {
+      await ref
+          .read(registerProvider.notifier)
+          .register(
+            _controllers['name']!.text,
+            _controllers['username']!.text,
+            _controllers['email']!.text,
+            _controllers['password']!.text,
+            _controllers['confirmPassword']!.text,
+          );
+
+      final registerState = ref.read(registerProvider);
+
+      if (registerState.registerResponse != null &&
+          registerState.error == null) {
+        if (kDebugMode) print('Registration successful!');
+
+        if (mounted) {
+          AppNotification.success(context, 'Registration successfully!');
+
+          _controllers.forEach((_, controller) => controller.clear());
+          Navigator.pushReplacementNamed(
+            context,
+            NavigationRoutes.authLogin.path,
+          );
+        }
       }
-    });
+    } catch (e) {
+      if (kDebugMode) print('Registration failed: $e');
+
+      if (mounted) {
+        AppNotification.error(context, e.toString());
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<RegisterState>(registerProvider, (previous, next) {
+      if (next.error != null && next.error!.isNotEmpty) {
+        AppNotification.error(context, next.error!);
+      }
+    });
+
+    final isLoading = ref.watch(isRegisterLoadingProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -74,119 +114,126 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Lume Share',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 28),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
+                _buildHeader(context),
                 const SizedBox(height: AppSpacing.xxl),
-
-                // Title
-                Text(
-                  'Create your\nAccount',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                _buildTitle(context),
                 const SizedBox(height: AppSpacing.xl),
-
-                // Email field
-                Text(
-                  'Email/Phone number',
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: AppSpacing.s),
-                CustomTextField(
-                  controller: _emailController,
-                  hintText: 'Enter your email',
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                if (_emailError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 4),
-                    child: Text(
-                      _emailError!,
-                      style: const TextStyle(
-                        color: AppColors.error,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.l),
-
-                // Password field
-                Text(
-                  'Password',
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: AppSpacing.s),
-                PasswordTextField(
-                  controller: _passwordController,
-                  hintText: 'Enter your password',
-                ),
-                if (_passwordError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 4),
-                    child: Text(
-                      _passwordError!,
-                      style: const TextStyle(
-                        color: AppColors.error,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.l),
-
-                // Confirm password field
-                Text(
-                  'Confirm Password',
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: AppSpacing.s),
-                PasswordTextField(
-                  controller: _confirmPasswordController,
-                  hintText: 'Confirm your password',
-                ),
-                if (_confirmPasswordError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 4),
-                    child: Text(
-                      _confirmPasswordError!,
-                      style: const TextStyle(
-                        color: AppColors.error,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                _buildForm(),
                 const SizedBox(height: AppSpacing.xl),
-
-                // Continue button
-                CustomButton(
-                  text: 'Create Account',
-                  onPressed: () {
-                    _validateEmail();
-                    _validatePasswords();
-                    if (_passwordError == null &&
-                        _confirmPasswordError == null &&
-                        _emailError == null) {
-                      print('Registration successful!');
-                    }
-                  },
-                ),
+                _buildSubmitButton(isLoading),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Lume Share', style: Theme.of(context).textTheme.titleMedium),
+        IconButton(
+          icon: const Icon(Icons.close, size: 28),
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    return Text(
+      'Create your\nAccount',
+      style: Theme.of(context).textTheme.titleLarge,
+    );
+  }
+
+  Widget _buildForm() {
+    return Column(
+      children: [
+        _buildFormField(
+          key: 'name',
+          label: 'Name',
+          hintText: 'Masukkan nama Anda',
+          keyboardType: TextInputType.text,
+        ),
+        _buildFormField(
+          key: 'username',
+          label: 'Username',
+          hintText: 'Masukkan username Anda',
+          keyboardType: TextInputType.text,
+        ),
+        _buildFormField(
+          key: 'email',
+          label: 'Email',
+          hintText: 'Enter your email',
+          keyboardType: TextInputType.emailAddress,
+        ),
+        _buildFormField(
+          key: 'password',
+          label: 'Password',
+          hintText: 'Enter your password',
+          isPassword: true,
+        ),
+        _buildFormField(
+          key: 'confirmPassword',
+          label: 'Confirm Password',
+          hintText: 'Confirm your password',
+          isPassword: true,
+          isLast: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormField({
+    required String key,
+    required String label,
+    required String hintText,
+    TextInputType? keyboardType,
+    bool isPassword = false,
+    bool isLast = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(height: AppSpacing.s),
+        isPassword
+            ? PasswordTextField(
+                controller: _controllers[key]!,
+                hintText: hintText,
+              )
+            : CustomTextField(
+                controller: _controllers[key]!,
+                hintText: hintText,
+                keyboardType: keyboardType,
+              ),
+        if (_validationErrors[key] != null)
+          _buildErrorMessage(_validationErrors[key]!),
+        if (!isLast) const SizedBox(height: AppSpacing.l),
+      ],
+    );
+  }
+
+  Widget _buildErrorMessage(String message) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, left: 4),
+      child: Text(
+        message,
+        style: const TextStyle(color: AppColors.error, fontSize: 12),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton(bool isLoading) {
+    return CustomButton(
+      text: isLoading ? 'Creating Account...' : 'Create Account',
+      onPressed: isLoading ? null : _handleSubmit,
+      isLoading: isLoading,
     );
   }
 }
