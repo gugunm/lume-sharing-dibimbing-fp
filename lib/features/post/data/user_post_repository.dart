@@ -21,12 +21,7 @@ class UserPostRepository {
       final response = await _dio.get(
         '/api/v1/users-post/$userId',
         queryParameters: {'size': size, 'page': page},
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'apiKey': 'c7b411cc-0e7c-4ad1-aa3f-822b00e7734b',
-          },
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       print('>>> User Posts API Response: ${response.data}');

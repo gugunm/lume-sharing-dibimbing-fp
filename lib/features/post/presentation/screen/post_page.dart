@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 
@@ -19,6 +20,7 @@ class PostPageView extends ConsumerStatefulWidget {
 }
 
 class _PostPageViewState extends ConsumerState<PostPageView> {
+  final userId = AuthStorageService.getCurrentUser()?.id;
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
@@ -28,15 +30,25 @@ class _PostPageViewState extends ConsumerState<PostPageView> {
   void _onItemTapped(int index) {
     if (index == 2) {
       // Navigate to create post screen using route
-      Navigator.pushNamed(context, '/create-post');
+      Navigator.pushNamed(context, NavigationRoutes.createPost.path);
       return;
     }
 
     // Jika index 4 (Profile), arahkan ke user posts
     if (index == 4) {
-      Navigator.pushNamed(context, '/users-post');
+      if (userId != null) {
+        Navigator.of(context).pushReplacementNamed(
+          NavigationRoutes.userPost.pathWithParams({'userId': userId!}),
+        );
+      } else {
+        // User not logged in, redirect to login
+        Navigator.of(
+          context,
+        ).pushReplacementNamed(NavigationRoutes.authLogin.path);
+      }
       return;
     }
+
     setState(() {
       _selectedIndex = index;
     });

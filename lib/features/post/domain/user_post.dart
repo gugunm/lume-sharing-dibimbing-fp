@@ -12,13 +12,29 @@ class UserPost {
   });
 
   factory UserPost.fromJson(Map<String, dynamic> json) {
+    List<Post> posts = [];
+    final data = json["data"];
+
+    try {
+      if (data is List) {
+        posts = data
+            .map((x) => Post.fromJson(x as Map<String, dynamic>))
+            .toList();
+      } else if (data is Map<String, dynamic> && data.containsKey('posts')) {
+        final nestedPosts = data['posts'] as List;
+        posts = nestedPosts
+            .map((x) => Post.fromJson(x as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (e) {
+      print('Error parsing posts: $e');
+    }
+
     return UserPost(
-      totalItems: json["totalItems"],
-      posts: List<Post>.from(
-        json["data"].map((x) => Post.fromJson(x)),
-      ), // Ganti "posts" ke "data"
-      totalPages: json["totalPages"],
-      currentPage: json["currentPage"],
+      totalItems: json["totalItems"] ?? 0,
+      posts: posts,
+      totalPages: json["totalPages"] ?? 0,
+      currentPage: json["currentPage"] ?? 1,
     );
   }
 }
@@ -48,15 +64,15 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json["id"],
-      userId: json["userId"],
-      imageUrl: json["imageUrl"],
-      caption: json["caption"],
-      isLike: json["isLike"],
-      totalLikes: json["totalLikes"],
-      user: User.fromJson(json["user"]),
-      createdAt: DateTime.parse(json["createdAt"]),
-      updatedAt: DateTime.parse(json["updatedAt"]),
+      id: json["id"] ?? "",
+      userId: json["userId"] ?? "",
+      imageUrl: json["imageUrl"] ?? "",
+      caption: json["caption"] ?? "",
+      isLike: json["isLike"] ?? false,
+      totalLikes: json["totalLikes"] ?? 0, // Handle null with default value
+      user: User.fromJson(json["user"] ?? {}),
+      createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json["updatedAt"] ?? "") ?? DateTime.now(),
     );
   }
 }
@@ -78,11 +94,11 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json["id"],
-      username: json["username"],
-      email: json["email"],
-      profilePictureUrl: json["profilePictureUrl"],
-      createdAt: DateTime.parse(json["createdAt"]),
+      id: json["id"] ?? "",
+      username: json["username"] ?? "",
+      email: json["email"] ?? "",
+      profilePictureUrl: json["profilePictureUrl"] ?? "",
+      createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
     );
   }
 }

@@ -24,6 +24,15 @@ enum NavigationRoutes {
   //   NavigationRoutes.authRegister.path: (context) => const RegisterPage(),
   // };
 
+  // Helper method to generate path with parameters
+  String pathWithParams(Map<String, String> params) {
+    String result = path;
+    params.forEach((key, value) {
+      result = result.replaceAll(':$key', value);
+    });
+    return result;
+  }
+
   static final Map<String, Widget Function(BuildContext)> _routes = {
     // Guest routes (hanya untuk yang belum login)
     NavigationRoutes.authLogin.path: (context) =>
@@ -37,16 +46,27 @@ enum NavigationRoutes {
     ),
     NavigationRoutes.createPost.path: (context) =>
         const ProtectedRoute(child: CreatePostScreen()),
-
-    // NavigationRoutes.userPost.path: (context) =>
-    //     const ProtectedRoute(child: UserPostScreen()),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final uri = Uri.parse(settings.name ?? '');
+
+    // Handle userPost route with parameter
+    if (uri.pathSegments.length == 2 && uri.pathSegments[0] == 'users-post') {
+      final userId = uri.pathSegments[1];
+      return MaterialPageRoute(
+        builder: (context) =>
+            ProtectedRoute(child: UserPostScreen(userId: userId)),
+        settings: settings,
+      );
+    }
+
+    // Handle static routes
     final builder = _routes[settings.name];
     if (builder != null) {
-      return MaterialPageRoute(builder: builder);
+      return MaterialPageRoute(builder: builder, settings: settings);
     }
+
     return MaterialPageRoute(builder: (context) => const LoginPage());
   }
 }

@@ -9,10 +9,10 @@ UserPost userPostFromJson(String str) => UserPost.fromJson(json.decode(str));
 String userPostToJson(UserPost data) => json.encode(data.toJson());
 
 class UserPost {
-  int totalItems;
-  List<Post> posts;
-  int totalPages;
-  int currentPage;
+  final int totalItems;
+  final List<Post> posts;
+  final int totalPages;
+  final int currentPage;
 
   UserPost({
     required this.totalItems,
@@ -21,31 +21,42 @@ class UserPost {
     required this.currentPage,
   });
 
-  factory UserPost.fromJson(Map<String, dynamic> json) => UserPost(
-    totalItems: json["totalItems"],
-    posts: List<Post>.from(json["posts"].map((x) => Post.fromJson(x))),
-    totalPages: json["totalPages"],
-    currentPage: json["currentPage"],
-  );
+  factory UserPost.fromJson(Map<String, dynamic> json) {
+    final data = json["data"];
+    List<Post> posts = [];
+
+    if (data is List) {
+      posts = data
+          .map((x) => Post.fromJson(x as Map<String, dynamic>))
+          .toList();
+    }
+
+    return UserPost(
+      totalItems: json["totalItems"] ?? 0,
+      posts: posts,
+      totalPages: json["totalPages"] ?? 0,
+      currentPage: json["currentPage"] ?? 1,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "totalItems": totalItems,
-    "posts": List<dynamic>.from(posts.map((x) => x.toJson())),
+    "data": List<dynamic>.from(posts.map((x) => x.toJson())),
     "totalPages": totalPages,
     "currentPage": currentPage,
   };
 }
 
 class Post {
-  String id;
-  String userId;
-  String imageUrl;
-  String caption;
-  bool isLike;
-  int totalLikes;
-  User user;
-  DateTime createdAt;
-  DateTime updatedAt;
+  final String id;
+  final String userId;
+  final String imageUrl;
+  final String caption;
+  final bool isLike;
+  final int totalLikes;
+  final User user;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Post({
     required this.id,
@@ -60,15 +71,15 @@ class Post {
   });
 
   factory Post.fromJson(Map<String, dynamic> json) => Post(
-    id: json["id"],
-    userId: json["userId"],
-    imageUrl: json["imageUrl"],
-    caption: json["caption"],
-    isLike: json["isLike"],
-    totalLikes: json["totalLikes"],
-    user: User.fromJson(json["user"]),
-    createdAt: DateTime.parse(json["createdAt"]),
-    updatedAt: DateTime.parse(json["updatedAt"]),
+    id: json["id"] ?? "",
+    userId: json["userId"] ?? "",
+    imageUrl: json["imageUrl"] ?? "",
+    caption: json["caption"] ?? "",
+    isLike: json["isLike"] ?? false,
+    totalLikes: json["totalLikes"] ?? 0,
+    user: User.fromJson(json["user"] ?? {}),
+    createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
+    updatedAt: DateTime.tryParse(json["updatedAt"] ?? "") ?? DateTime.now(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -85,11 +96,11 @@ class Post {
 }
 
 class User {
-  String id;
-  String username;
-  String email;
-  String profilePictureUrl;
-  DateTime createdAt;
+  final String id;
+  final String username;
+  final String email;
+  final String profilePictureUrl;
+  final DateTime createdAt;
 
   User({
     required this.id,
@@ -100,11 +111,11 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json["id"],
-    username: json["username"],
-    email: json["email"],
-    profilePictureUrl: json["profilePictureUrl"],
-    createdAt: DateTime.parse(json["createdAt"]),
+    id: json["id"] ?? "",
+    username: json["username"] ?? "",
+    email: json["email"] ?? "",
+    profilePictureUrl: json["profilePictureUrl"] ?? "",
+    createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
   );
 
   Map<String, dynamic> toJson() => {

@@ -2,28 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/features/post/data/user_post_repository.dart';
 import 'package:fp_sharing_photo/features/post/domain/user_post.dart';
 
-// State untuk user post
-class UserPostState {
-  final bool isLoading;
-  final List<Post> posts;
-  final String? error;
-
-  UserPostState({this.isLoading = false, this.posts = const [], this.error});
-
-  UserPostState copyWith({bool? isLoading, List<Post>? posts, String? error}) {
-    return UserPostState(
-      isLoading: isLoading ?? this.isLoading,
-      posts: posts ?? this.posts,
-      error: error ?? this.error,
-    );
-  }
-}
-
-// Notifier untuk user post
-class UserPostNotifier extends Notifier<UserPostState> {
+// Notifier untuk user post menggunakan AsyncNotifier
+class UserPostNotifier extends AsyncNotifier<List<Post>> {
   @override
-  UserPostState build() {
-    return UserPostState();
+  Future<List<Post>> build() async {
+    // Return empty list initially
+    return [];
   }
 
   UserPostRepository get _repository => ref.read(userPostRepositoryProvider);
@@ -33,7 +17,8 @@ class UserPostNotifier extends Notifier<UserPostState> {
     int size = 10,
     int page = 1,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    // Set loading state
+    state = const AsyncLoading();
 
     try {
       final result = await _repository.getUserPosts(
@@ -41,10 +26,39 @@ class UserPostNotifier extends Notifier<UserPostState> {
         size: size,
         page: page,
       );
-      state = state.copyWith(isLoading: false, posts: result.posts);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString(), posts: []);
+      // Set success state with posts
+      state = AsyncData(result.posts);
+    } catch (e, stackTrace) {
+      // Set error state
+      state = AsyncError(e, stackTrace);
     }
+  }
+
+  // Method to add more posts (for pagination)
+  Future<void> loadMorePosts(
+    String userId, {
+    int size = 10,
+    int page = 1,
+  }) async {
+    // Don't show loading if we already have data
+    final currentPosts = state.value ?? [];
+
+    try {
+      final result = await _repository.getUserPosts(
+        userId,
+        size: size,
+        page: page,
+      );
+      // Append new posts to existing ones
+      state = AsyncData([...currentPosts, ...result.posts]);
+    } catch (e, stackTrace) {
+      state = AsyncError(e, stackTrace);
+    }
+  }
+
+  // Method to refresh posts
+  Future<void> refreshPosts(String userId) async {
+    return getUserPosts(userId);
   }
 }
 
@@ -53,7 +67,9 @@ final userPostRepositoryProvider = Provider<UserPostRepository>((ref) {
   return UserPostRepository();
 });
 
-// Provider untuk notifier
-final userPostProvider = NotifierProvider<UserPostNotifier, UserPostState>(() {
-  return UserPostNotifier();
-});
+// Provider untuk notifier - now returns AsyncValue<List<Post>>
+final userPostProvider = AsyncNotifierProvider<UserPostNotifier, List<Post>>(
+  () {
+    return UserPostNotifier();
+  },
+);
