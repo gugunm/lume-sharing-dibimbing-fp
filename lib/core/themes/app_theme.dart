@@ -7,6 +7,13 @@ final lightTheme = ThemeData(
   // Use your constants to build the theme
   colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
   scaffoldBackgroundColor: AppColors.background,
+  appBarTheme: const AppBarTheme(
+    titleTextStyle: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textPrimary,
+    ),
+  ),
   textTheme: const TextTheme(
     titleLarge: AppTextStyles.titleLarge,
     titleMedium: AppTextStyles.titleMedium,
