@@ -3,12 +3,17 @@ import 'package:fp_sharing_photo/core/navigations/guards/auth_guard.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/screen/login_page.dart';
 import 'package:fp_sharing_photo/features/auth/register/presentation/screen/register_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/post_page.dart';
+import 'package:fp_sharing_photo/features/post/presentation/screen/create_post_page.dart';
+import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
 
 enum NavigationRoutes {
   authLogin(path: '/auth/login'),
   authRegister(path: '/auth/register'),
   home(path: '/home'), // Tambahkan route home
-  profile(path: '/profile');
+  profile(path: '/profile'),
+
+  createPost(path: '/create-post'),
+  userPost(path: '/users-post/:userId');
 
   const NavigationRoutes({required this.path});
 
@@ -30,6 +35,11 @@ enum NavigationRoutes {
     NavigationRoutes.home.path: (context) => const ProtectedRoute(
       child: PostPage(), // Anda perlu buat HomePage
     ),
+    NavigationRoutes.createPost.path: (context) =>
+        const ProtectedRoute(child: CreatePostScreen()),
+
+    // NavigationRoutes.userPost.path: (context) =>
+    //     const ProtectedRoute(child: UserPostScreen()),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
