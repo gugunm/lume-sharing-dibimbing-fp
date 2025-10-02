@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
+import 'package:fp_sharing_photo/features/connection/following/presentation/screen/follow_page.dart';
+import 'package:fp_sharing_photo/features/explore/presentation/screen/explore_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
-import 'package:fp_sharing_photo/features/user/presentation/screen/user_page.dart';
+
+import 'home_content.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -26,7 +29,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
   int _selectedIndex = 0;
 
   // Daftar halaman untuk setiap tab
-  late final List<Widget> _pages;
+  final Map<int, Widget> _pageCache = {};
 
   // Daftar title untuk setiap tab
   final List<String> _pageTitles = [
@@ -37,80 +40,69 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
     'Profile',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _buildHomePage(),
-      _buildSearchPage(),
-      const SizedBox.shrink(), // Placeholder untuk create post
-      _buildNotificationsPage(),
-      _buildProfilePage(),
-    ];
-  }
-
-  // Widget untuk halaman Home
-  Widget _buildHomePage() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.home, size: 100, color: Colors.blue),
-          SizedBox(height: 16),
-          Text(
-            'Home Page',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Konten feed posts akan ditampilkan di sini'),
-        ],
-      ),
-    );
-  }
-
-  // Widget untuk halaman Search
-  Widget _buildSearchPage() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search, size: 100, color: Colors.green),
-          SizedBox(height: 16),
-          Text(
-            'Search Page',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Fitur pencarian akan ditampilkan di sini'),
-        ],
-      ),
-    );
-  }
-
-  // Widget untuk halaman Notifications
-  Widget _buildNotificationsPage() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.notifications, size: 100, color: Colors.orange),
-          SizedBox(height: 16),
-          Text(
-            'Notifications Page',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Notifikasi akan ditampilkan di sini'),
-        ],
-      ),
-    );
-  }
-
-  // Widget untuk halaman Profile
-  Widget _buildProfilePage() {
-    if (userId != null) {
-      return UserPostScreen(userId: userId!);
+  // Method untuk membuat widget secara lazy (hanya saat dibutuhkan)
+  Widget _buildPage(int index) {
+    // Jika sudah ada di cache, gunakan yang ada
+    if (_pageCache.containsKey(index)) {
+      return _pageCache[index]!;
     }
 
-    // Jika user sudah login, tampilkan UserPage atau profile content
-    return const UserPage(); // Atau bisa diganti dengan widget profile yang sesuai
+    // Buat widget baru sesuai index
+    Widget page;
+    switch (index) {
+      case 0:
+        page = const HomeContent();
+        break;
+      case 1:
+        page = const ExplorePage();
+        break;
+      case 2:
+        page = const SizedBox.shrink(); // Placeholder untuk create post
+        break;
+      case 3:
+        page = const FollowingPage();
+        break;
+      case 4:
+        if (userId != null) {
+          page = UserPostScreen(userId: userId!);
+        } else {
+          page = _buildLoginPrompt();
+        }
+        break;
+      default:
+        page = const SizedBox.shrink();
+    }
+
+    // Simpan ke cache
+    _pageCache[index] = page;
+    return page;
+  }
+
+  // Widget untuk prompt login jika user belum login
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.person_off, size: 100, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text(
+            'Not Logged In',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const Text('Please login to view your profile'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).pushReplacementNamed(NavigationRoutes.authLogin.path);
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onItemTapped(int index) {
@@ -136,11 +128,13 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
+              // Clear cache setelah logout
+              _pageCache.clear();
             },
           ),
         ],
       ),
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: _buildPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
