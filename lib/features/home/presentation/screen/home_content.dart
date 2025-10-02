@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'home_post_section.dart';
+import 'home_story_section.dart';
+
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
@@ -7,16 +10,9 @@ class HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.home, size: 100, color: Colors.blue),
-          SizedBox(height: 16),
-          Text(
-            'Home Page',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text('Konten posts akan ditampilkan di sini'),
-        ],
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [HomeStorySection(), HomePostSection()],
       ),
     );
   }

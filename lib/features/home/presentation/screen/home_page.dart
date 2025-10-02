@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
@@ -30,15 +31,6 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
 
   // Daftar halaman untuk setiap tab
   final Map<int, Widget> _pageCache = {};
-
-  // Daftar title untuk setiap tab
-  final List<String> _pageTitles = [
-    'Home', // story
-    'Explore',
-    'Create Post', // Tidak akan ditampilkan karena navigasi terpisah
-    'Connections',
-    'Profile',
-  ];
 
   // Method untuk membuat widget secara lazy (hanya saat dibutuhkan)
   Widget _buildPage(int index) {
@@ -121,8 +113,36 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background, // Add this line
       appBar: AppBar(
-        title: Text(_pageTitles[_selectedIndex]), // Title berubah sesuai tab
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.fromLTRB(2.0, 0.0, 2.0, 8.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0),
+                // color: Colors.black87,
+              ),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+                height: 32, // Control logo size
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Lume Share',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            // Text(_pageTitles[_selectedIndex]),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
