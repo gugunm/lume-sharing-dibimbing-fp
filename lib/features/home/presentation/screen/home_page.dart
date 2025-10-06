@@ -159,13 +159,13 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle, size: 40), // Simplified add button
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
+            icon: Icon(Icons.groups),
             label: 'Connections',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
