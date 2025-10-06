@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
 
 import '../provider/explore_provider.dart';
@@ -103,12 +104,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
           itemCount:
               posts.length +
               (_isLoadingMore ? 1 : 0), // Add 1 extra item for loader
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(4),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 0.75,
+            crossAxisCount: 3,
+            // crossAxisSpacing: 4,
+            // mainAxisSpacing: 4,
+            childAspectRatio: 0.8,
           ),
           // itemCount: posts.length,
           itemBuilder: (context, index) {
@@ -124,49 +125,78 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             final post = posts[index];
             return Card(
               clipBehavior: Clip.antiAlias,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+                side: BorderSide(color: AppColors.divider, width: 1),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Image.network(
-                      post.imageUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 50),
-                      ),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey[200],
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
+                    child: post.imageUrl.isEmpty
+                        ? Center(
+                            child: Image.asset(
+                              'assets/images/no-image.png',
+                              fit: BoxFit.contain,
+                              width: 60,
+                              height: 60,
+                              opacity: const AlwaysStoppedAnimation(0.5),
                             ),
+                          )
+                        : Image.network(
+                            post.imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(
+                                  child: Image.asset(
+                                    'assets/images/no-image.png',
+                                    fit: BoxFit.contain,
+                                    width: 60,
+                                    height: 60,
+                                    opacity: const AlwaysStoppedAnimation(0.5),
+                                  ),
+                                ),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: Colors.grey[200],
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value:
+                                        loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                  .cumulativeBytesLoaded /
+                                              loadingProgress
+                                                  .expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
+                  // Padding(
+                  //   padding: const EdgeInsets.all(8.0),
+                  //   child: Text(
+                  //     post.imageUrl.isEmpty ? 'No image URL' : post.imageUrl,
+                  //   ),
+                  // ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(post.imageUrl),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      post.caption,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: post.caption.isEmpty
+                        ? const Text('No caption')
+                        : Text(
+                            post.caption,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                   ),
                 ],
               ),

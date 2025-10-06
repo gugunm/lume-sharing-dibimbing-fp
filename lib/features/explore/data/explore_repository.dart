@@ -10,7 +10,7 @@ import '../domain/explore.dart';
 class ExploreRepository {
   final Dio _dio = ApiClient().dio;
 
-  Future<ExploreResponse> getExplorePosts({int page = 1, int size = 10}) async {
+  Future<ExploreResponse> getExplorePosts({int page = 1, int size = 15}) async {
     final token = await AuthStorageService.getToken();
 
     try {
@@ -40,7 +40,7 @@ class ExploreRepository {
     }
   }
 
-  Future<ExploreResponse> getInitialExplorePosts({int size = 10}) async {
+  Future<ExploreResponse> getInitialExplorePosts({int size = 15}) async {
     return getExplorePosts(page: 1, size: size);
   }
 
