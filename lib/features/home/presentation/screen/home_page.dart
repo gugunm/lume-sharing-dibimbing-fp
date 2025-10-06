@@ -4,10 +4,10 @@ import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
 import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
-import 'package:fp_sharing_photo/features/connection/following/presentation/screen/follow_page.dart';
 import 'package:fp_sharing_photo/features/explore/presentation/screen/explore_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
 
+import '../../../connection/wrapper/connection_page.dart';
 import 'home_content.dart';
 
 class HomePage extends ConsumerWidget {
@@ -52,7 +52,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
         page = const SizedBox.shrink(); // Placeholder untuk create post
         break;
       case 3:
-        page = const FollowingPage();
+        page = const ConnectionPage();
         break;
       case 4:
         if (userId != null) {

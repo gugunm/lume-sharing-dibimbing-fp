@@ -154,6 +154,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
+                    child: Text(post.imageUrl),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Text(
                       post.caption,
                       style: const TextStyle(
