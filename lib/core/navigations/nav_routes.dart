@@ -6,6 +6,7 @@ import 'package:fp_sharing_photo/features/home/presentation/screen/home_page.dar
 import 'package:fp_sharing_photo/features/post/presentation/screen/create_post_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
 import 'package:fp_sharing_photo/features/user/presentation/screen/update_profile_screen.dart';
+import 'package:fp_sharing_photo/features/user/presentation/screen/profile_screen.dart';
 
 enum NavigationRoutes {
   authLogin(path: '/auth/login'),
@@ -50,6 +51,8 @@ enum NavigationRoutes {
         const ProtectedRoute(child: CreatePostScreen()),
     NavigationRoutes.updateUserProfile.path: (context) =>
         const ProtectedRoute(child: UpdateProfileScreen()),
+    NavigationRoutes.profile.path: (context) =>
+        const ProtectedRoute(child: ProfileScreen()),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
