@@ -34,6 +34,12 @@ class _PostPageViewState extends ConsumerState<PostPageView> {
       return;
     }
 
+    if (index == 3) {
+      // Navigate to update profile screen using route
+      Navigator.pushNamed(context, NavigationRoutes.updateUserProfile.path);
+      return;
+    }
+
     // Jika index 4 (Profile), arahkan ke user posts
     if (index == 4) {
       if (userId != null) {
