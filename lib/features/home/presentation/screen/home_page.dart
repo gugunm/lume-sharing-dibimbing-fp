@@ -104,6 +104,18 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
       return;
     }
 
+    if (index == 1) {
+      // Navigate to update profile screen menggunakan route terpisah
+      Navigator.pushNamed(context, NavigationRoutes.updateUserProfile.path);
+      return;
+    }
+
+    if (index == 4) {
+      // Navigate to update profile screen menggunakan route terpisah
+      Navigator.pushNamed(context, NavigationRoutes.profile.path);
+      return;
+    }
+
     // Untuk tab lainnya, update selectedIndex untuk mengubah konten
     setState(() {
       _selectedIndex = index;
