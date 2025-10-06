@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/features/user/presentation/provider/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -27,14 +28,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to settings
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              NavigationRoutes.home.path,
+              (route) => false,
+            );
+          },
+        ),
       ),
       body: profileState.isLoading && profileState.profile == null
           ? const Center(child: CircularProgressIndicator())
@@ -122,19 +124,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   // Navigate to edit profile
                                   Navigator.pushNamed(
                                     context,
-                                    '/update-profile',
+                                    NavigationRoutes.updateUserProfile.path,
                                   );
                                 },
-                                child: const Text('Edit Profile'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  // Navigate to message screen
-                                },
-                                child: const Text('Share'),
+                                child: const Text(
+                                  'Edit Profile',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -146,7 +146,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 // Posts grid
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                     child: Text(
                       'Posts',
                       style: TextStyle(

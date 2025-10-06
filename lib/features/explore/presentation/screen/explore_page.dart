@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/constants/app_colors.dart';
+import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
 
 import '../provider/explore_provider.dart';
@@ -82,126 +83,146 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   Widget build(BuildContext context) {
     final explorePostAsync = ref.watch(exploreProvider);
 
-    return explorePostAsync.when(
-      loading: () => const GlobalLoadingWidget(),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Gagal: $error'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _onRefresh,
-              child: const Text('Coba Lagi'),
-            ),
-          ],
-        ),
-      ),
-      data: (posts) => RefreshIndicator(
-        onRefresh: _onRefresh,
-        child: GridView.builder(
-          controller: _scrollController, // Attach the scroll controller
-          itemCount:
-              posts.length +
-              (_isLoadingMore ? 1 : 0), // Add 1 extra item for loader
-          padding: const EdgeInsets.all(4),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            // crossAxisSpacing: 4,
-            // mainAxisSpacing: 4,
-            childAspectRatio: 0.8,
-          ),
-          // itemCount: posts.length,
-          itemBuilder: (context, index) {
-            // Show loading indicator at the end
-            if (index == posts.length) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: GlobalLoadingWidget(),
-                ),
-              );
-            }
-            final post = posts[index];
-            return Card(
-              clipBehavior: Clip.antiAlias,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-                side: BorderSide(color: AppColors.divider, width: 1),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: post.imageUrl.isEmpty
-                        ? Center(
-                            child: Image.asset(
-                              'assets/images/no-image.png',
-                              fit: BoxFit.contain,
-                              width: 60,
-                              height: 60,
-                              opacity: const AlwaysStoppedAnimation(0.5),
-                            ),
-                          )
-                        : Image.network(
-                            post.imageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Center(
-                                  child: Image.asset(
-                                    'assets/images/no-image.png',
-                                    fit: BoxFit.contain,
-                                    width: 60,
-                                    height: 60,
-                                    opacity: const AlwaysStoppedAnimation(0.5),
-                                  ),
-                                ),
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                color: Colors.grey[200],
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    value:
-                                        loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress
-                                                  .cumulativeBytesLoaded /
-                                              loadingProgress
-                                                  .expectedTotalBytes!
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  // Padding(
-                  //   padding: const EdgeInsets.all(8.0),
-                  //   child: Text(
-                  //     post.imageUrl.isEmpty ? 'No image URL' : post.imageUrl,
-                  //   ),
-                  // ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: post.caption.isEmpty
-                        ? const Text('No caption')
-                        : Text(
-                            post.caption,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                  ),
-                ],
-              ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Explore'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              NavigationRoutes.home.path,
+              (route) => false,
             );
           },
+        ),
+      ),
+      body: SafeArea(
+        child: explorePostAsync.when(
+          loading: () => const GlobalLoadingWidget(),
+          error: (error, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Gagal: $error'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _onRefresh,
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
+          ),
+          data: (posts) => RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: GridView.builder(
+              controller: _scrollController, // Attach the scroll controller
+              itemCount:
+                  posts.length +
+                  (_isLoadingMore ? 1 : 0), // Add 1 extra item for loader
+              padding: const EdgeInsets.all(4),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                // crossAxisSpacing: 4,
+                // mainAxisSpacing: 4,
+                childAspectRatio: 0.8,
+              ),
+              // itemCount: posts.length,
+              itemBuilder: (context, index) {
+                // Show loading indicator at the end
+                if (index == posts.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: GlobalLoadingWidget(),
+                    ),
+                  );
+                }
+                final post = posts[index];
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                    side: BorderSide(color: AppColors.divider, width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: post.imageUrl.isEmpty
+                            ? Center(
+                                child: Image.asset(
+                                  'assets/images/no-image.png',
+                                  fit: BoxFit.contain,
+                                  width: 60,
+                                  height: 60,
+                                  opacity: const AlwaysStoppedAnimation(0.5),
+                                ),
+                              )
+                            : Image.network(
+                                post.imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(
+                                      child: Image.asset(
+                                        'assets/images/no-image.png',
+                                        fit: BoxFit.contain,
+                                        width: 60,
+                                        height: 60,
+                                        opacity: const AlwaysStoppedAnimation(
+                                          0.5,
+                                        ),
+                                      ),
+                                    ),
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value:
+                                                loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              ),
+                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.all(8.0),
+                      //   child: Text(
+                      //     post.imageUrl.isEmpty ? 'No image URL' : post.imageUrl,
+                      //   ),
+                      // ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: post.caption.isEmpty
+                            ? const Text('No caption')
+                            : Text(
+                                post.caption,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

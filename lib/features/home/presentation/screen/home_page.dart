@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
-import 'package:fp_sharing_photo/features/auth/login/presentation/provider/login_provider.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/features/explore/presentation/screen/explore_page.dart';
-import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
+import 'package:fp_sharing_photo/features/user/presentation/screen/profile_screen.dart';
 
 import '../../../connection/wrapper/connection_page.dart';
 import 'home_content.dart';
@@ -55,14 +54,10 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
         page = const ConnectionPage();
         break;
       case 4:
-        if (userId != null) {
-          page = UserPostScreen(userId: userId!);
-        } else {
-          page = _buildLoginPrompt();
-        }
+        page = const ProfileScreen();
         break;
       default:
-        page = const SizedBox.shrink();
+        page = _buildLoginPrompt();
     }
 
     // Simpan ke cache
@@ -104,18 +99,6 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
       return;
     }
 
-    if (index == 1) {
-      // Navigate to update profile screen menggunakan route terpisah
-      Navigator.pushNamed(context, NavigationRoutes.updateUserProfile.path);
-      return;
-    }
-
-    if (index == 4) {
-      // Navigate to update profile screen menggunakan route terpisah
-      Navigator.pushNamed(context, NavigationRoutes.profile.path);
-      return;
-    }
-
     // Untuk tab lainnya, update selectedIndex untuk mengubah konten
     setState(() {
       _selectedIndex = index;
@@ -126,46 +109,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background, // Add this line
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.all(8.0),
-              padding: const EdgeInsets.fromLTRB(2.0, 0.0, 2.0, 8.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                // color: Colors.black87,
-              ),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-                height: 32, // Control logo size
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Lume Share',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            // Text(_pageTitles[_selectedIndex]),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-              // Clear cache setelah logout
-              _pageCache.clear();
-            },
-          ),
-        ],
-      ),
+
       body: _buildPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
