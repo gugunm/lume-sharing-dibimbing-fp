@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/post_repository.dart';
-import '../../domain/post.dart';
+import '../../data/explore_repository.dart';
+import '../../domain/explore.dart';
 
-class PostState extends Equatable {
+class ExploreState extends Equatable {
   final List<Post> posts;
   final bool isLoading;
   final bool isLoadingMore;
@@ -12,7 +12,7 @@ class PostState extends Equatable {
   final int currentPage;
   final String? error;
 
-  const PostState({
+  const ExploreState({
     this.posts = const [],
     this.isLoading = false,
     this.isLoadingMore = false,
@@ -21,7 +21,7 @@ class PostState extends Equatable {
     this.error,
   });
 
-  PostState copyWith({
+  ExploreState copyWith({
     List<Post>? posts,
     bool? isLoading,
     bool? isLoadingMore,
@@ -29,7 +29,7 @@ class PostState extends Equatable {
     int? currentPage,
     String? error,
   }) {
-    return PostState(
+    return ExploreState(
       posts: posts ?? this.posts,
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
@@ -51,29 +51,29 @@ class PostState extends Equatable {
 }
 
 // Providers
-final postRepositoryProvider = Provider<PostRepository>((ref) {
-  return PostRepository();
+final exploreRepositoryProvider = Provider<ExploreRepository>((ref) {
+  return ExploreRepository();
 });
 
-final postProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(() {
-  return PostNotifier();
+final exploreProvider = AsyncNotifierProvider<ExploreNotifier, List<Post>>(() {
+  return ExploreNotifier();
 });
 
-class PostNotifier extends AsyncNotifier<List<Post>> {
-  PostRepository get _repository => ref.read(postRepositoryProvider);
+class ExploreNotifier extends AsyncNotifier<List<Post>> {
+  ExploreRepository get _repository => ref.read(exploreRepositoryProvider);
 
   int _currentPage = 0;
   bool _hasMore = true;
 
   @override
   Future<List<Post>> build() async {
-    return await _loadInitialPosts();
+    return await _loadInitialExplorePosts();
   }
 
   // Load first page
-  Future<List<Post>> _loadInitialPosts() async {
+  Future<List<Post>> _loadInitialExplorePosts() async {
     try {
-      final response = await _repository.getInitialPosts();
+      final response = await _repository.getInitialExplorePosts();
       _currentPage = response.data.currentPage;
       _hasMore = _repository.hasMorePages(response);
       return response.data.posts;
@@ -82,8 +82,8 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     }
   }
 
-  // Load more posts
-  Future<void> loadMoreStories() async {
+  // In explore_provider.dart
+  Future<void> loadMoreExplorePosts() async {
     // 1. Check if we can load more
     if (!_hasMore || state.isLoading) return;
 
@@ -92,7 +92,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
 
     try {
       // 3. Fetch next page from repository
-      final response = await _repository.getNextPosts(
+      final response = await _repository.getNextExplorePosts(
         currentPage: _currentPage,
       );
 
@@ -111,13 +111,13 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
   }
 
   // Refresh posts
-  Future<void> refreshStories() async {
+  Future<void> refreshExplorePosts() async {
     _currentPage = 0;
     _hasMore = true;
     state = const AsyncValue.loading();
 
     try {
-      final posts = await _loadInitialPosts();
+      final posts = await _loadInitialExplorePosts();
       state = AsyncValue.data(posts);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);

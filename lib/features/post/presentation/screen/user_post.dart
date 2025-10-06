@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
 import 'package:fp_sharing_photo/features/post/presentation/provider/user_post_provider.dart';
 
@@ -35,26 +36,36 @@ class _UserPostScreenState extends ConsumerState<UserPostScreen> {
   Widget build(BuildContext context) {
     final userPostAsync = ref.watch(userPostProvider);
 
-    return userPostAsync.when(
-      loading: () => const GlobalLoadingWidget(),
-      error: (error, stack) => Center(child: Text('Gagal: $error')),
-      data: (posts) => ListView.builder(
-        itemCount: posts.length,
-        itemBuilder: (context, index) {
-          final post = posts[index];
-          return ListTile(
-            title: Text(
-              post.caption,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+    return Scaffold(
+      body: userPostAsync.when(
+        loading: () => const GlobalLoadingWidget(),
+        error: (error, stack) => Center(child: Text('Gagal: $error')),
+        data: (posts) => ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            final post = posts[index];
+            return ListTile(
+              title: Text(
+                post.caption,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            subtitle: Text(post.imageUrl),
-          );
-        },
+              subtitle: Text(post.imageUrl),
+            );
+          },
+        ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, NavigationRoutes.updateUserProfile.path);
+        },
+        child: const Icon(Icons.manage_accounts),
+      ),
+      // Opsional: atur posisi FAB
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

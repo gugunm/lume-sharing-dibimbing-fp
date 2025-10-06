@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fp_sharing_photo/core/errors/app_exception.dart';
+import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
 import '../provider/post_provider.dart';
 
 class HomePostSection extends ConsumerStatefulWidget {
@@ -11,59 +11,142 @@ class HomePostSection extends ConsumerStatefulWidget {
 }
 
 class _HomePostSectionState extends ConsumerState<HomePostSection> {
+  // ✅ STEP 1: Add ScrollController
+  final ScrollController _scrollController = ScrollController();
+
+  // ✅ STEP 2: Declare the _isLoadingMore variable
+  bool _isLoadingMore = false;
+
   @override
   void initState() {
     super.initState();
-    // Load posts when widget starts
-    Future.microtask(() {
-      ref.read(postProvider.notifier).loadInitialStories();
+    // ✅ STEP 3: Add scroll listener
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    // ✅ STEP 4: Clean up scroll controller
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // ✅ STEP 5: Add scroll detection method
+  void _onScroll() {
+    // Prevent loading if already loading
+    if (_isLoadingMore) return;
+
+    // Get scroll metrics
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    final threshold = maxScroll * 0.9;
+
+    // Check if we've reached the threshold
+    if (currentScroll >= threshold) {
+      _loadMorePosts();
+    }
+  }
+
+  // ✅ STEP 6: Add method to load more posts
+  Future<void> _loadMorePosts() async {
+    final notifier = ref.read(postProvider.notifier);
+
+    // Check if there are more pages to load
+    if (!notifier.hasMore) return;
+
+    // Set loading state to true
+    setState(() {
+      _isLoadingMore = true;
     });
+
+    try {
+      // Call the provider method to fetch next page
+      await notifier.loadMoreStories();
+    } finally {
+      // Reset loading state when done
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  // ✅ STEP 7: Add Pull-to-Refresh method
+  Future<void> _onRefresh() async {
+    await ref.read(postProvider.notifier).refreshStories();
   }
 
   @override
   Widget build(BuildContext context) {
-    final postState = ref.watch(postProvider);
+    final postAsync = ref.watch(postProvider);
 
-    return Expanded(child: _buildContent(postState));
+    return Expanded(
+      child: postAsync.when(
+        loading: () => const Center(child: GlobalLoadingWidget()),
+        error: (error, stack) => _buildErrorWidget(error.toString()),
+        data: (posts) => _buildPostsList(posts),
+      ),
+    );
   }
 
-  Widget _buildContent(PostState state) {
-    // Loading
-    if (state.isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    // Error
-    if (state.error != null) {
-      return _buildErrorWidget(state.error!);
-    }
-
-    // Empty
-    if (state.posts.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  // ✅ STEP 8: Update posts list with RefreshIndicator and loading indicator
+  Widget _buildPostsList(List posts) {
+    // Empty state
+    if (posts.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: ListView(
           children: [
-            Icon(Icons.photo_library_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No posts available'),
-            SizedBox(height: 8),
-            Text(
-              'Follow some users to see their posts here',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.photo_library_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text('No posts available'),
+                    SizedBox(height: 8),
+                    Text(
+                      'Follow some users to see their posts here',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       );
     }
 
-    // Posts list
-    return ListView.builder(
-      itemCount: state.posts.length,
-      itemBuilder: (context, index) {
-        final post = state.posts[index];
-        return _buildPostCard(post);
-      },
+    // Posts list with scroll controller and loading indicator
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: ListView.builder(
+        controller: _scrollController, // Attach scroll controller
+        itemCount: posts.length + (_isLoadingMore ? 1 : 0), // Add 1 for loader
+        itemBuilder: (context, index) {
+          // Show loading indicator at the end
+          if (index == posts.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: GlobalLoadingWidget(),
+              ),
+            );
+          }
+
+          final post = posts[index];
+          return _buildPostCard(post);
+        },
+      ),
     );
   }
 
