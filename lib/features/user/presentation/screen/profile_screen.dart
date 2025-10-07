@@ -156,6 +156,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                             ],
                           ),
+                        // Follow button for other users
+                        if (!_isLoggedUser)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: profileState.isLoading
+                                      ? null
+                                      : () async {
+                                          final userId =
+                                              profileState.profile?.user.id;
+                                          if (userId != null) {
+                                            if (profileState.isFollowing) {
+                                              // Unfollow
+                                              await ref
+                                                  .read(
+                                                    profileProvider.notifier,
+                                                  )
+                                                  .unfollowUser(userId);
+                                            } else {
+                                              // Follow
+                                              await ref
+                                                  .read(
+                                                    profileProvider.notifier,
+                                                  )
+                                                  .followUser(userId);
+                                            }
+                                          }
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: profileState.isFollowing
+                                        ? Colors.grey[300]
+                                        : Theme.of(context).primaryColor,
+                                  ),
+                                  child: Text(
+                                    profileState.isFollowing
+                                        ? 'Unfollow'
+                                        : 'Follow',
+                                    style: TextStyle(
+                                      color: profileState.isFollowing
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),

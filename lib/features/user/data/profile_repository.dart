@@ -18,12 +18,7 @@ class ProfileRepository {
 
       final response = await _dio.get(
         '/api/v1/user',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'apiKey': 'c7b411cc-0e7c-4ad1-aa3f-822b00e7734b',
-          },
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       print('>>> Get Logged User Profile API Response: ${response.data}');
@@ -55,12 +50,7 @@ class ProfileRepository {
       final response = await _dio.get(
         '/api/v1/users-post/$userId',
         queryParameters: {'size': size, 'page': page},
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'apiKey': 'c7b411cc-0e7c-4ad1-aa3f-822b00e7734b',
-          },
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       print('>>> Get User Posts API Response: ${response.data}');
@@ -89,12 +79,7 @@ class ProfileRepository {
 
       final response = await _dio.get(
         '/api/v1/user/$userId',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'apiKey': 'c7b411cc-0e7c-4ad1-aa3f-822b00e7734b',
-          },
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       print('>>> Get User Profile By ID API Response: ${response.data}');
@@ -107,6 +92,57 @@ class ProfileRepository {
     } catch (e) {
       print('>>> Get User Profile By ID Error: $e');
       throw Exception('Failed to fetch user profile: $e');
+    }
+  }
+
+  // Follow user
+  Future<void> followUser(String userIdToFollow) async {
+    try {
+      final token = await AuthStorageService.getToken();
+
+      if (token == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _dio.post(
+        '/api/v1/follow',
+        data: {'userIdFollow': userIdToFollow},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      print('>>> Follow User API Response: ${response.data}');
+    } on DioException catch (e) {
+      print('>>> Follow User DioException: ${e.message}');
+      throw Exception(e.response?.data?['message'] ?? 'Failed to follow user');
+    } catch (e) {
+      print('>>> Follow User Error: $e');
+      throw Exception('Failed to follow user: $e');
+    }
+  }
+
+  // Unfollow user
+  Future<void> unfollowUser(String userId) async {
+    try {
+      final token = await AuthStorageService.getToken();
+
+      if (token == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _dio.delete(
+        '/api/v1/unfollow/$userId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      print('>>> Unfollow User API Response: ${response.data}');
+    } on DioException catch (e) {
+      print('>>> Unfollow User DioException: ${e.message}');
+      throw Exception(
+        e.response?.data?['message'] ?? 'Failed to unfollow user',
+      );
+    } catch (e) {
+      print('>>> Unfollow User Error: $e');
+      throw Exception('Failed to unfollow user: $e');
     }
   }
 }
