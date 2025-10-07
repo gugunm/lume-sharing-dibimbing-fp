@@ -5,6 +5,7 @@ import 'package:fp_sharing_photo/features/auth/register/presentation/screen/regi
 import 'package:fp_sharing_photo/features/home/presentation/screen/home_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/create_post_page.dart';
 import 'package:fp_sharing_photo/features/post/presentation/screen/user_post.dart';
+import 'package:fp_sharing_photo/features/post-detail/presentation/screen/post_detail_page.dart';
 import 'package:fp_sharing_photo/features/user/presentation/screen/update_profile_screen.dart';
 
 enum NavigationRoutes {
@@ -15,6 +16,7 @@ enum NavigationRoutes {
 
   createPost(path: '/create-post'),
   userPost(path: '/users-post/:userId'),
+  postDetail(path: '/post-detail/:postId'),
   updateUserProfile(path: '/update-profile');
 
   const NavigationRoutes({required this.path});
@@ -61,6 +63,16 @@ enum NavigationRoutes {
       return MaterialPageRoute(
         builder: (context) =>
             ProtectedRoute(child: UserPostScreen(userId: userId)),
+        settings: settings,
+      );
+    }
+
+    // Handle postDetail route with parameter
+    if (uri.pathSegments.length == 2 && uri.pathSegments[0] == 'post-detail') {
+      final postId = uri.pathSegments[1];
+      return MaterialPageRoute(
+        builder: (context) =>
+            ProtectedRoute(child: PostDetailPage(postId: postId)),
         settings: settings,
       );
     }

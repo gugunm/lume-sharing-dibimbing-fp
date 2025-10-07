@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
+import 'package:fp_sharing_photo/features/post-detail/presentation/utils/post_navigation_helper.dart';
 import '../provider/post_provider.dart';
 
 class HomePostSection extends ConsumerStatefulWidget {
@@ -287,11 +288,15 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
   }
 
   Widget _buildPostCard(post) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return GestureDetector(
+      onTap: () {
+        PostNavigationHelper.navigateToPostDetail(context, post.id);
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // User info header
           ListTile(
             leading: CircleAvatar(
@@ -368,6 +373,7 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
           ),
         ],
       ),
+    ),
     );
   }
 
