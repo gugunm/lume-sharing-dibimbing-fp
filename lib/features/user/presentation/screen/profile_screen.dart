@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
+import 'package:fp_sharing_photo/features/post-detail/presentation/utils/post_navigation_helper.dart';
 import 'package:fp_sharing_photo/features/user/presentation/provider/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -234,26 +235,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       return Container();
                     }
                     final post = profileState.posts[index];
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        post.imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error),
-                          );
-                        },
+                    return GestureDetector(
+                      onTap: () {
+                        PostNavigationHelper.navigateToPostDetail(
+                          context,
+                          post.id,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.network(
+                          post.imageUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.error),
+                            );
+                          },
+                        ),
                       ),
                     );
                   }, childCount: profileState.posts.length),

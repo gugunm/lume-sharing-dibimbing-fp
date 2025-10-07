@@ -86,9 +86,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (next.isAuthenticated && !next.isLoading) {
         // Only show success message if previous state was not authenticated
         // This prevents showing the message during auto-login checks
-        if (previous != null && !previous.isAuthenticated) {
-          AppNotification.success(context, 'Login successfully!');
-        }
+        // if (previous != null && !previous.isAuthenticated) {
+        //   AppNotification.success(context, 'Login successfully!');
+        // }
         // Navigate to home page
         // Navigator.of(context).pushReplacementNamed(NavigationRoutes.home.path);
       }

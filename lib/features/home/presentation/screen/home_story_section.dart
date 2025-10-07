@@ -44,7 +44,7 @@ class _HomeStorySectionState extends ConsumerState<HomeStorySection> {
 
     // Empty
     if (state.stories.isEmpty) {
-      return Center(child: Text('No stories'));
+      return const SizedBox.shrink();
     }
 
     // Stories list

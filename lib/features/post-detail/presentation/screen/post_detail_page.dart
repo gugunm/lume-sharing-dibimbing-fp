@@ -9,10 +9,7 @@ import '../../domain/post_detail.dart';
 class PostDetailPage extends ConsumerStatefulWidget {
   final String postId;
 
-  const PostDetailPage({
-    super.key,
-    required this.postId,
-  });
+  const PostDetailPage({super.key, required this.postId});
 
   @override
   ConsumerState<PostDetailPage> createState() => _PostDetailPageState();
@@ -45,23 +42,36 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   }
 
   String formatCommentDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     final postDetailAsync = ref.watch(postDetailProvider(widget.postId));
-    final postDetailNotifier = ref.read(postDetailNotifierProvider(widget.postId));
+    final postDetailNotifier = ref.read(
+      postDetailNotifierProvider(widget.postId),
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Post Detail')
-      ),
+      appBar: AppBar(title: const Text('Post Detail')),
       body: postDetailAsync.when(
         loading: () => const Center(child: GlobalLoadingWidget()),
-        error: (error, stack) => _buildErrorWidget(error.toString(), postDetailNotifier),
+        error: (error, stack) =>
+            _buildErrorWidget(error.toString(), postDetailNotifier),
         data: (postDetail) => _buildContent(postDetail, postDetailNotifier),
       ),
     );
@@ -74,18 +84,11 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 64,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 64),
             const SizedBox(height: AppSpacing.m),
             Text(
               'Error loading post detail',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.s),
             Text(
@@ -115,16 +118,16 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
               children: [
                 // Post card with same styling as home
                 _buildPostCard(postDetail, notifier),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Comments section
                 _buildCommentsSection(postDetail.comments),
               ],
             ),
           ),
         ),
-        
+
         // Comment input
         _buildCommentInput(notifier),
       ],
@@ -204,7 +207,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     GestureDetector(
                       onTap: () => notifier.toggleLike(),
                       child: Icon(
-                        postDetail.isLike ? Icons.favorite : Icons.favorite_border,
+                        postDetail.isLike
+                            ? Icons.favorite
+                            : Icons.favorite_border,
                         color: postDetail.isLike ? Colors.red : Colors.grey,
                       ),
                     ),
@@ -216,8 +221,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 // Caption
                 if (postDetail.caption.isNotEmpty)
                   Text(
-                    postDetail.caption, 
-                    style: const TextStyle(fontSize: 14)
+                    postDetail.caption,
+                    style: const TextStyle(fontSize: 14),
                   ),
               ],
             ),
@@ -235,57 +240,46 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Text(
-            'Comments (${comments.length})',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            Text(
+              'Comments (${comments.length})',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: AppSpacing.m),
-          
-          if (comments.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              child: const Column(
-                children: [
-                  Icon(
-                    Icons.chat_bubble_outline,
-                    size: 48,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: AppSpacing.s),
-                  Text(
-                    'No comments yet',
-                    style: TextStyle(
-                      fontSize: 16,
+            const SizedBox(height: AppSpacing.m),
+
+            if (comments.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.l),
+                child: const Column(
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 48,
                       color: Colors.grey,
                     ),
-                  ),
-                  Text(
-                    'Be the first to comment!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                    SizedBox(height: AppSpacing.s),
+                    Text(
+                      'No comments yet',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
-                  ),
-                ],
+                    Text(
+                      'Be the first to comment!',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: comments.length,
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 1, color: AppColors.divider),
+                itemBuilder: (context, index) {
+                  final comment = comments[index];
+                  return _buildCommentItem(comment);
+                },
               ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: comments.length,
-              separatorBuilder: (context, index) => const Divider(
-                height: 1,
-                color: AppColors.divider,
-              ),
-              itemBuilder: (context, index) {
-                final comment = comments[index];
-                return _buildCommentItem(comment);
-              },
-            ),
           ],
         ),
       ),
@@ -302,7 +296,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             radius: 16,
             backgroundImage: comment.user.profilePictureUrl.isNotEmpty
                 ? NetworkImage(comment.user.profilePictureUrl)
-                : const AssetImage('assets/images/no-image.png') as ImageProvider,
+                : const AssetImage('assets/images/no-image.png')
+                      as ImageProvider,
           ),
           const SizedBox(width: AppSpacing.s),
           Expanded(
@@ -329,10 +324,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(
-                  comment.comment,
-                  style: const TextStyle(fontSize: 14),
-                ),
+                Text(comment.comment, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ),
@@ -347,13 +339,11 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         left: AppSpacing.m,
         right: AppSpacing.m,
         top: AppSpacing.s,
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.s,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.xxl,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.divider),
-        ),
+        border: Border(top: BorderSide(color: AppColors.divider)),
       ),
       child: Row(
         children: [
@@ -389,10 +379,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             onPressed: _commentController.text.trim().isEmpty
                 ? null
                 : () => _submitComment(notifier),
-            icon: const Icon(
-              Icons.send,
-              color: AppColors.primary,
-            ),
+            icon: const Icon(Icons.send, color: AppColors.primary),
           ),
         ],
       ),

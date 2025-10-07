@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/constants/app_colors.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
+import 'package:fp_sharing_photo/features/post-detail/presentation/utils/post_navigation_helper.dart';
 
 import '../provider/explore_provider.dart';
 
@@ -138,86 +139,92 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                   );
                 }
                 final post = posts[index];
-                return Card(
-                  clipBehavior: Clip.antiAlias,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    side: BorderSide(color: AppColors.divider, width: 1),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: post.imageUrl.isEmpty
-                            ? Center(
-                                child: Image.asset(
-                                  'assets/images/no-image.png',
-                                  fit: BoxFit.contain,
-                                  width: 60,
-                                  height: 60,
-                                  opacity: const AlwaysStoppedAnimation(0.5),
-                                ),
-                              )
-                            : Image.network(
-                                post.imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Center(
-                                      child: Image.asset(
-                                        'assets/images/no-image.png',
-                                        fit: BoxFit.contain,
-                                        width: 60,
-                                        height: 60,
-                                        opacity: const AlwaysStoppedAnimation(
-                                          0.5,
-                                        ),
-                                      ),
-                                    ),
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        color: Colors.grey[200],
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
+                return GestureDetector(
+                  onTap: () {
+                    PostNavigationHelper.navigateToPostDetail(context, post.id);
+                  },
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      side: BorderSide(color: AppColors.divider, width: 1),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: post.imageUrl.isEmpty
+                              ? Center(
+                                  child: Image.asset(
+                                    'assets/images/no-image.png',
+                                    fit: BoxFit.contain,
+                                    width: 60,
+                                    height: 60,
+                                    opacity: const AlwaysStoppedAnimation(0.5),
+                                  ),
+                                )
+                              : Image.network(
+                                  post.imageUrl,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                        child: Image.asset(
+                                          'assets/images/no-image.png',
+                                          fit: BoxFit.contain,
+                                          width: 60,
+                                          height: 60,
+                                          opacity: const AlwaysStoppedAnimation(
+                                            0.5,
                                           ),
                                         ),
-                                      );
-                                    },
-                              ),
-                      ),
-                      // Padding(
-                      //   padding: const EdgeInsets.all(8.0),
-                      //   child: Text(
-                      //     post.imageUrl.isEmpty ? 'No image URL' : post.imageUrl,
-                      //   ),
-                      // ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: post.caption.isEmpty
-                            ? const Text('No caption')
-                            : Text(
-                                post.caption,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                      ),
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Container(
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                      ),
-                    ],
+                        ),
+                        // Padding(
+                        //   padding: const EdgeInsets.all(8.0),
+                        //   child: Text(
+                        //     post.imageUrl.isEmpty ? 'No image URL' : post.imageUrl,
+                        //   ),
+                        // ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: post.caption.isEmpty
+                              ? const Text('No caption')
+                              : Text(
+                                  post.caption,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

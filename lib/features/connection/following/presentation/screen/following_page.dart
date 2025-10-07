@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
+import 'package:fp_sharing_photo/features/user/presentation/screen/profile_screen.dart';
 
 import '../provider/following_provider.dart';
 
@@ -154,10 +155,12 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
                 ),
                 trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
                 onTap: () {
-                  // TODO: Navigate to user profile
-                  // Navigator.push(context, MaterialPageRoute(
-                  //   builder: (context) => UserProfilePage(userId: user.id),
-                  // ));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(userId: user.id),
+                    ),
+                  );
                 },
               ),
             );
