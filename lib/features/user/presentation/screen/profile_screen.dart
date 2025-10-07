@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/navigations/nav_routes.dart';
+import 'package:fp_sharing_photo/core/services/auth_storage_service.dart';
 import 'package:fp_sharing_photo/features/user/presentation/provider/profile_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  final String? userId; // Optional userId parameter
+
+  const ProfileScreen({super.key, this.userId});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  String? _loggedUserId;
+
   @override
   void initState() {
     super.initState();
 
     // Load profile saat screen dibuka
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileProvider.notifier).loadProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Get logged user ID to compare
+      _loggedUserId = await AuthStorageService.getCurrentUser()?.id;
+      setState(() {});
+
+      // Load profile based on userId parameter
+      ref.read(profileProvider.notifier).loadProfile(userId: widget.userId);
     });
+  }
+
+  bool get _isLoggedUser {
+    return widget.userId == null || widget.userId == _loggedUserId;
   }
 
   @override
@@ -27,14 +41,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(_isLoggedUser ? 'Profile' : 'User Profile'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              NavigationRoutes.home.path,
-              (route) => false,
-            );
+            if (_isLoggedUser) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                NavigationRoutes.home.path,
+                (route) => false,
+              );
+            } else {
+              Navigator.of(context).pop();
+            }
           },
         ),
       ),
@@ -69,8 +87,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   _buildStatItem(
-                                    profileState.posts.length
-                                        .toString(), // Jumlah post dari posts
+                                    profileState.posts.length.toString(),
                                     'posts',
                                   ),
                                   _buildStatItem(
@@ -115,30 +132,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             style: const TextStyle(fontSize: 16),
                           ),
                         const SizedBox(height: 16),
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Navigate to edit profile
-                                  Navigator.pushNamed(
-                                    context,
-                                    NavigationRoutes.updateUserProfile.path,
-                                  );
-                                },
-                                child: const Text(
-                                  'Edit Profile',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                        // Action buttons - only show Edit Profile for logged user
+                        if (_isLoggedUser)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      NavigationRoutes.updateUserProfile.path,
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Edit Profile',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -164,7 +181,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
                     if (index >= profileState.posts.length) {
-                      return Container(); // Handle jika posts kosong
+                      return Container();
                     }
                     final post = profileState.posts[index];
                     return ClipRRect(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fp_sharing_photo/core/widgets/loading_widget.dart';
+import 'package:fp_sharing_photo/features/user/presentation/screen/profile_screen.dart';
 import '../provider/post_provider.dart';
 
 class HomePostSection extends ConsumerStatefulWidget {
@@ -294,14 +295,37 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
         children: [
           // User info header
           ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(post.user.profilePictureUrl),
-              onBackgroundImageError: (_, __) {},
-              child: post.user.profilePictureUrl.isEmpty
-                  ? Icon(Icons.person)
-                  : null,
+            leading: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userId: post.user.id),
+                  ),
+                );
+              },
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(post.user.profilePictureUrl),
+                onBackgroundImageError: (_, __) {},
+                child: post.user.profilePictureUrl.isEmpty
+                    ? Icon(Icons.person)
+                    : null,
+              ),
             ),
-            title: Text(post.user.username),
+            title: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userId: post.user.id),
+                  ),
+                );
+              },
+              child: Text(
+                post.user.username,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
             subtitle: Text(_formatDate(post.createdAt)),
           ),
           // Post image
@@ -318,8 +342,13 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                      SizedBox(height: 8),
+                      Image(
+                        image: AssetImage('assets/images/no-image.png'),
+                        width: 48,
+                        height: 48,
+                        opacity: const AlwaysStoppedAnimation(0.5),
+                      ),
+                      SizedBox(height: 16),
                       Text(
                         'Image not available',
                         style: TextStyle(color: Colors.grey),
@@ -346,26 +375,59 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
           ),
           // Post actions and info
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(
-                      post.isLike ? Icons.favorite : Icons.favorite_border,
-                      color: post.isLike ? Colors.red : Colors.grey,
+                    IconButton(
+                      icon: Icon(
+                        post.isLike ? Icons.favorite : Icons.favorite_border,
+                        color: post.isLike ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: () async {
+                        try {
+                          await ref
+                              .read(postProvider.notifier)
+                              .toggleLike(post.id, post.isLike);
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Failed to update like: ${e.toString()}',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
                     ),
-                    SizedBox(width: 8),
                     Text('${post.totalLikes} likes'),
                   ],
                 ),
-                SizedBox(height: 8),
-                if (post.caption.isNotEmpty)
-                  Text(post.caption, style: TextStyle(fontSize: 14)),
               ],
             ),
           ),
+
+          if (post.caption.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                  children: [
+                    TextSpan(
+                      text: post.user.username,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' ${post.caption}'),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -375,12 +437,23 @@ class _HomePostSectionState extends ConsumerState<HomePostSection> {
     final now = DateTime.now();
     final difference = now.difference(date);
 
-    if (difference.inDays > 0) {
+    if (difference.inDays >= 365) {
+      final years = (difference.inDays / 365).floor();
+      return '${years}y ago';
+    } else if (difference.inDays >= 30) {
+      final months = (difference.inDays / 30).floor();
+      return '${months}mo ago';
+    } else if (difference.inDays >= 7) {
+      final weeks = (difference.inDays / 7).floor();
+      return '${weeks}w ago';
+    } else if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {
       return '${difference.inHours}h ago';
     } else if (difference.inMinutes > 0) {
       return '${difference.inMinutes}m ago';
+    } else if (difference.inSeconds > 0) {
+      return '${difference.inSeconds}s ago';
     } else {
       return 'Just now';
     }

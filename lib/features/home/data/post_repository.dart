@@ -68,4 +68,72 @@ class PostRepository {
   int getTotalPosts(PostResponse response) {
     return response.data.totalItems;
   }
+
+  /// Like a post
+  Future<void> likePost(String postId) async {
+    final token = await AuthStorageService.getToken();
+
+    try {
+      final response = await _dio.post(
+        '/api/v1/like',
+        data: {'postId': postId},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (kDebugMode) {
+        print('>>> Like Post Response');
+        print('>>> Post ID: $postId');
+        print('>>> ${response.data}');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('>>> DioException in likePost: ${e.message}');
+        print('>>> Error type: ${e.type}');
+        print('>>> Response: ${e.response?.data}');
+        print('>>> Status Code: ${e.response?.statusCode}');
+      }
+
+      final appException = DioExceptionHandler.handleDioException(e);
+      throw appException;
+    } catch (e) {
+      if (kDebugMode) {
+        print('>>> Error in likePost: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Unlike a post
+  Future<void> unlikePost(String postId) async {
+    final token = await AuthStorageService.getToken();
+
+    try {
+      final response = await _dio.post(
+        '/api/v1/unlike',
+        data: {'postId': postId},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (kDebugMode) {
+        print('>>> Unlike Post Response');
+        print('>>> Post ID: $postId');
+        print('>>> ${response.data}');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('>>> DioException in unlikePost: ${e.message}');
+        print('>>> Error type: ${e.type}');
+        print('>>> Response: ${e.response?.data}');
+        print('>>> Status Code: ${e.response?.statusCode}');
+      }
+
+      final appException = DioExceptionHandler.handleDioException(e);
+      throw appException;
+    } catch (e) {
+      if (kDebugMode) {
+        print('>>> Error in unlikePost: $e');
+      }
+      rethrow;
+    }
+  }
 }

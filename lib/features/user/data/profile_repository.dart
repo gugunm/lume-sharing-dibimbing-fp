@@ -77,4 +77,36 @@ class ProfileRepository {
       throw Exception('Failed to fetch user posts: $e');
     }
   }
+
+  // Get user profile by ID
+  Future<GetLoggedUserProfileResponse> getUserProfileById(String userId) async {
+    try {
+      final token = await AuthStorageService.getToken();
+
+      if (token == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _dio.get(
+        '/api/v1/user/$userId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'apiKey': 'c7b411cc-0e7c-4ad1-aa3f-822b00e7734b',
+          },
+        ),
+      );
+
+      print('>>> Get User Profile By ID API Response: ${response.data}');
+      return GetLoggedUserProfileResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      print('>>> Get User Profile By ID DioException: ${e.message}');
+      throw Exception(
+        e.response?.data?['message'] ?? 'Failed to fetch user profile',
+      );
+    } catch (e) {
+      print('>>> Get User Profile By ID Error: $e');
+      throw Exception('Failed to fetch user profile: $e');
+    }
+  }
 }

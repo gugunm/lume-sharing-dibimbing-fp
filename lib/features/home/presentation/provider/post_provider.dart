@@ -125,4 +125,44 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
   }
 
   bool get hasMore => _hasMore;
+
+  /// Toggle like/unlike for a post
+  Future<void> toggleLike(String postId, bool currentIsLike) async {
+    // Get current posts
+    final currentPosts = state.value ?? [];
+
+    // Find the post and update it optimistically
+    final updatedPosts = currentPosts.map((post) {
+      if (post.id == postId) {
+        return Post(
+          id: post.id,
+          userId: post.userId,
+          imageUrl: post.imageUrl,
+          caption: post.caption,
+          isLike: !currentIsLike,
+          totalLikes: currentIsLike ? post.totalLikes - 1 : post.totalLikes + 1,
+          user: post.user,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+        );
+      }
+      return post;
+    }).toList();
+
+    // Update state optimistically
+    state = AsyncValue.data(updatedPosts);
+
+    try {
+      // Call API
+      if (currentIsLike) {
+        await _repository.unlikePost(postId);
+      } else {
+        await _repository.likePost(postId);
+      }
+    } catch (e) {
+      // Revert on error
+      state = AsyncValue.data(currentPosts);
+      rethrow;
+    }
+  }
 }
